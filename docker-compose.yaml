@@ -1,0 +1,37 @@
+version: "3.3"
+services:
+  postgres:
+    image: postgres
+    network_mode: bridge
+    container_name: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    expose:
+    - 5432
+    ports:
+      - 5432:5432
+    environment:
+         - POSTGRES_PASSWORD=admin123
+         - POSTGRES_USER=admin
+         - POSTGRES_DB=poller
+    restart: unless-stopped
+# Poller API Component*****************************************
+  pollerapp:
+    image: poller:latest
+    network_mode: bridge
+    container_name: poller-app
+    expose:
+      - 8080
+    ports:
+      - 8080:8080
+    environment:
+      - SPRING_R2DBC_URL=r2dbc:postgresql://postgres:5432/poller
+      - SPRING_R2DBC_USERNAME=admin
+      - SPRING_R2DBC_PASSWORD=admin123
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    links:
+      - postgres
+volumes:
+  postgres-data:           
